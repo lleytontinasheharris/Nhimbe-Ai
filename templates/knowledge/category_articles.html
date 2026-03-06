@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <p class="breadcrumb">
+            <a href="{% url 'knowledge:home' %}">{{ ui.knowledge_base }}</a> / {{ category.name }}
+        </p>
+
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>{{ category.name }}</h1>
+                {% if category.description %}
+                <p>{{ category.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="article-list">
+            {% for article in articles %}
+            <a href="{% url 'knowledge:article_detail' slug=article.slug %}" class="article-list-item">
+                <div class="article-list-main">
+                    <div class="article-card-tags">
+                        <span class="article-difficulty article-difficulty--{{ article.difficulty }}">{{ article.get_difficulty_display }}</span>
+                    </div>
+                    <h3>{{ article.title }}</h3>
+                    <p>{{ article.summary|truncatewords:18 }}</p>
+                </div>
+                <div class="article-list-meta">
+                    <span>{{ article.views }} {{ ui.views }}</span>
+                    <span>{{ article.created_at|timesince }} {{ ui.ago }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <p class="empty-message">No articles in this category yet.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

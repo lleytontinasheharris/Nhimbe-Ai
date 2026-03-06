@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Articles{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Manage Articles</h1>
+                <p>Create, edit, and manage knowledge base content</p>
+            </div>
+            <a href="{% url 'knowledge:admin_create_article' %}" class="btn btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Article
+            </a>
+        </div>
+
+        <div class="admin-article-list">
+            {% for article in articles %}
+            <div class="admin-article-item">
+                <div class="admin-article-info">
+                    <div class="admin-article-status">
+                        {% if article.is_published %}
+                        <span class="status-badge status-badge--published">Published</span>
+                        {% else %}
+                        <span class="status-badge status-badge--draft">Draft</span>
+                        {% endif %}
+                        {% if article.is_featured %}
+                        <span class="status-badge status-badge--featured">Featured</span>
+                        {% endif %}
+                    </div>
+                    <h3>{{ article.title }}</h3>
+                    <p class="admin-article-meta">
+                        <span>{{ article.category.name|default:"No category" }}</span>
+                        <span class="meta-sep"></span>
+                        <span>{{ article.get_author_display }}</span>
+                        <span class="meta-sep"></span>
+                        <span>{{ article.views }} views</span>
+                        <span class="meta-sep"></span>
+                        <span>{{ article.created_at|date:"d M Y" }}</span>
+                    </p>
+                </div>
+                <div class="admin-article-actions">
+                    <a href="{% url 'knowledge:article_detail' slug=article.slug %}" class="btn btn-sm btn-secondary" target="_blank">View</a>
+                    <a href="{% url 'knowledge:admin_edit_article' slug=article.slug %}" class="btn btn-sm btn-secondary">Edit</a>
+                    <a href="{% url 'knowledge:admin_delete_article' slug=article.slug %}" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-message">
+                <p>No articles yet. <a href="{% url 'knowledge:admin_create_article' %}">Create your first article</a></p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

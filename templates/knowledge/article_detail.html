@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container forum-container--narrow">
+
+        <!-- Breadcrumb -->
+        <p class="breadcrumb">
+            <a href="{% url 'knowledge:home' %}">{{ ui.knowledge_base }}</a>
+            {% if article.category %}
+            / <a href="{% url 'knowledge:category_articles' slug=article.category.slug %}">{{ article.category.name }}</a>
+            {% endif %}
+        </p>
+
+        <article class="article-full">
+            <!-- Header -->
+            <div class="article-full-header">
+                <div class="article-card-tags">
+                    {% if article.category %}
+                    <span class="article-tag">{{ article.category.name }}</span>
+                    {% endif %}
+                    <span class="article-difficulty article-difficulty--{{ article.difficulty }}">{{ article.get_difficulty_display }}</span>
+                </div>
+                
+                <h1>{{ article.title }}</h1>
+                <p class="article-summary">{{ article.summary }}</p>
+                
+                <div class="post-card-meta">
+                    <span class="meta-author">
+                        {{ article.get_author_display }}
+                        {% if article.get_source_display %}
+                        <span class="meta-source">({{ article.get_source_display }})</span>
+                        {% endif %}
+                    </span>
+                    <span class="meta-sep"></span>
+                    <span class="meta-date">{{ article.created_at|date:"d M Y" }}</span>
+                    <span class="meta-sep"></span>
+                    <span class="meta-views">{{ article.views }} {{ ui.view }}{{ article.views|pluralize }}</span>
+                    {% if average_rating %}
+                    <span class="meta-sep"></span>
+                    <span class="meta-rating">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        {{ average_rating }}/5 ({{ rating_count }})
+                    </span>
+                    {% endif %}
+                </div>
+
+                {% if article.source_url %}
+                <p class="article-source-link">
+                    <a href="{{ article.source_url }}" target="_blank" rel="noopener">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        {{ ui.view_source }}
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Featured Image -->
+            {% if article.featured_image %}
+            <div class="article-full-image">
+                <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+            </div>
+            {% endif %}
+
+            <!-- Article Content -->
+            <div class="article-full-body">
+                {{ article.content|safe }}
+            </div>
+
+            <!-- Download Section -->
+            {% if article.downloadable_file %}
+            <div class="article-download-box">
+                <div class="download-box-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </div>
+                <div class="download-box-text">
+                    <h3>{{ ui.download_resource }}</h3>
+                    <p>{{ article.file_description|default:ui.download_resource }}</p>
+                </div>
+                <a href="{{ article.downloadable_file.url }}" class="btn btn-primary" download>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    {{ ui.download }}
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Rating Section -->
+            <div class="article-rating-section">
+                <h3>{{ ui.was_helpful }}</h3>
+                {% if user.is_authenticated %}
+                <div class="rating-stars" data-article-slug="{{ article.slug }}">
+                    {% for i in "12345" %}
+                    <button type="button" class="star-btn {% if user_rating and user_rating >= forloop.counter %}active{% endif %}" data-score="{{ forloop.counter }}">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="{% if user_rating and user_rating >= forloop.counter %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </button>
+                    {% endfor %}
+                </div>
+                <p class="rating-feedback">
+                    {% if user_rating %}
+                    You rated this {{ user_rating }}/5. Click to change.
+                    {% else %}
+                    Click a star to rate this article.
+                    {% endif %}
+                </p>
+                {% else %}
+                <p class="rating-login-prompt">
+                    <a href="{% url 'accounts:login' %}?next={{ request.path }}">{{ ui.login }}</a> {{ ui.login_to_rate }}
+                </p>
+                {% endif %}
+            </div>
+
+        </article>
+
+        <!-- Related Articles -->
+        {% if related %}
+        <div class="related-section">
+            <h2 class="sub-heading">{{ ui.related_articles }}</h2>
+            <div class="article-list">
+                {% for item in related %}
+                <a href="{% url 'knowledge:article_detail' slug=item.slug %}" class="article-list-item">
+                    <div class="article-list-main">
+                        <div class="article-card-tags">
+                            <span class="article-difficulty article-difficulty--{{ item.difficulty }}">{{ item.get_difficulty_display }}</span>
+                        </div>
+                        <h3>{{ item.title }}</h3>
+                        <p>{{ item.summary|truncatewords:12 }}</p>
+                    </div>
+                    <div class="article-list-meta">
+                        <span>{{ item.views }} {{ ui.views }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Admin Edit Link -->
+        {% if user.is_staff %}
+        <div class="admin-edit-bar">
+            <a href="{% url 'knowledge:admin_edit_article' slug=article.slug %}" class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                {{ ui.edit_article }}
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingContainer = document.querySelector('.rating-stars');
+    if (!ratingContainer) return;
+
+    const articleSlug = ratingContainer.dataset.articleSlug;
+    const stars = ratingContainer.querySelectorAll('.star-btn');
+    const feedback = document.querySelector('.rating-feedback');
+
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', function() {
+            const score = parseInt(this.dataset.score);
+            stars.forEach((s, index) => {
+                const svg = s.querySelector('svg');
+                if (index < score) {
+                    svg.setAttribute('fill', 'currentColor');
+                } else {
+                    svg.setAttribute('fill', 'none');
+                }
+            });
+        });
+
+        star.addEventListener('click', function() {
+            const score = this.dataset.score;
+            
+            fetch(`/knowledge/article/${articleSlug}/rate/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `score=${score}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    stars.forEach((s, index) => {
+                        const svg = s.querySelector('svg');
+                        if (index < score) {
+                            s.classList.add('active');
+                            svg.setAttribute('fill', 'currentColor');
+                        } else {
+                            s.classList.remove('active');
+                            svg.setAttribute('fill', 'none');
+                        }
+                    });
+                    
+                    feedback.textContent = `Thank you! You rated this ${score}/5.`;
+                    
+                    const metaRating = document.querySelector('.meta-rating');
+                    if (metaRating) {
+                        metaRating.innerHTML = `
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            ${data.average}/5 (${data.count})
+                        `;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Rating error:', error);
+                feedback.textContent = 'Error saving rating. Please try again.';
+            });
+        });
+    });
+
+    ratingContainer.addEventListener('mouseleave', function() {
+        stars.forEach(s => {
+            const svg = s.querySelector('svg');
+            if (s.classList.contains('active')) {
+                svg.setAttribute('fill', 'currentColor');
+            } else {
+                svg.setAttribute('fill', 'none');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

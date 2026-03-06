@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <p class="breadcrumb">
+            <a href="{% url 'forum:home' %}">Forum</a>
+            {% if post.category %}
+            / <a href="{% url 'forum:category_detail' slug=post.category.slug %}">{{ post.category.name }}</a>
+            {% endif %}
+        </p>
+
+        <!-- Post -->
+        <div class="post-full">
+            <div class="post-full-header">
+                {% if post.is_pinned %}
+                <span class="post-pin">Pinned</span>
+                {% endif %}
+                {% if post.is_closed %}
+                <span class="post-closed">Closed</span>
+                {% endif %}
+                <h1>{{ post.title }}</h1>
+                <div class="post-card-meta">
+                    <span class="meta-author">{{ post.author.username }}</span>
+                    <span class="meta-sep"></span>
+                    <span class="meta-date">{{ post.created_at|date:"d M Y, H:i" }}</span>
+                    <span class="meta-sep"></span>
+                    <span class="meta-views">{{ post.views }} view{{ post.views|pluralize }}</span>
+                </div>
+            </div>
+            <div class="post-full-body">
+                {{ post.content|linebreaks }}
+            </div>
+            {% if user == post.author %}
+            <div class="post-actions">
+                <a href="{% url 'forum:edit_post' slug=post.slug %}" class="btn btn-secondary btn-sm">Edit</a>
+                <a href="{% url 'forum:delete_post' slug=post.slug %}" class="btn btn-danger btn-sm">Delete</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Comments -->
+        <div class="comments-section">
+            <h2 class="sub-heading">
+                <span id="commentCount">{{ comments|length }}</span> Comment<span id="commentPlural">{{ comments|length|pluralize }}</span>
+            </h2>
+
+            <div id="commentsContainer">
+                {% for comment in comments %}
+                <div class="comment-card" data-comment-id="{{ comment.id }}">
+                    <div class="comment-meta">
+                        <span class="meta-author">{{ comment.author.username }}</span>
+                        <span class="meta-sep"></span>
+                        <span class="meta-date">{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                    <div class="comment-body">
+                        {{ comment.content|linebreaks }}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-message" id="noCommentsMsg">No comments yet. Share your thoughts below.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Add Comment -->
+        {% if user.is_authenticated and not post.is_closed %}
+        <div class="comment-form-wrapper">
+            <h3>Leave a Comment</h3>
+            <form method="POST" action="{% url 'forum:add_comment' slug=post.slug %}" id="commentForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ comment_form.content }}
+                </div>
+                <button type="submit" class="btn btn-primary" id="commentSubmit">Post Comment</button>
+            </form>
+        </div>
+        {% elif not user.is_authenticated %}
+        <div class="comment-form-wrapper">
+            <p class="empty-message">
+                <a href="{% url 'accounts:login' %}">Login</a> to join the discussion.
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var pollUrl = '{% url "forum:poll_comments" slug=post.slug %}';
+    var container = document.getElementById('commentsContainer');
+    var countEl = document.getElementById('commentCount');
+    var pluralEl = document.getElementById('commentPlural');
+    var noMsgEl = document.getElementById('noCommentsMsg');
+    var form = document.getElementById('commentForm');
+    var POLL_INTERVAL = 15000;
+    var pollTimer;
+
+    function getLastCommentId() {
+        var cards = container.querySelectorAll('.comment-card[data-comment-id]');
+        if (cards.length === 0) return 0;
+        var last = cards[cards.length - 1];
+        return parseInt(last.getAttribute('data-comment-id')) || 0;
+    }
+
+    function createCommentHtml(comment) {
+        var div = document.createElement('div');
+        div.className = 'comment-card comment-card--new';
+        div.setAttribute('data-comment-id', comment.id);
+
+        var contentParagraphs = comment.content
+            .split('\n')
+            .filter(function (line) { return line.trim() !== ''; })
+            .map(function (line) { return '<p>' + escapeHtml(line) + '</p>'; })
+            .join('');
+
+        div.innerHTML =
+            '<div class="comment-meta">' +
+                '<span class="meta-author">' + escapeHtml(comment.author) + '</span>' +
+                '<span class="meta-sep"></span>' +
+                '<span class="meta-date">' + escapeHtml(comment.time_since) + '</span>' +
+            '</div>' +
+            '<div class="comment-body">' + contentParagraphs + '</div>';
+
+        return div;
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+    }
+
+    function updateCount(total) {
+        countEl.textContent = total;
+        pluralEl.textContent = total === 1 ? '' : 's';
+    }
+
+    function pollForComments() {
+        var lastId = getLastCommentId();
+
+        fetch(pollUrl + '?last_id=' + lastId)
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.comments && data.comments.length > 0) {
+                    if (noMsgEl) {
+                        noMsgEl.remove();
+                        noMsgEl = null;
+                    }
+
+                    data.comments.forEach(function (comment) {
+                        var existing = container.querySelector(
+                            '[data-comment-id="' + comment.id + '"]'
+                        );
+                        if (!existing) {
+                            var el = createCommentHtml(comment);
+                            container.appendChild(el);
+
+                            requestAnimationFrame(function () {
+                                el.classList.add('comment-card--visible');
+                            });
+                        }
+                    });
+
+                    updateCount(data.total);
+                }
+            })
+            .catch(function () {
+                /* Silently fail — will retry next interval */
+            });
+    }
+
+    /* Submit comment via AJAX so we don't reload the page */
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var textarea = form.querySelector('textarea');
+            var content = textarea.value.trim();
+            if (!content) return;
+
+            var submitBtn = document.getElementById('commentSubmit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+
+            var formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function (res) {
+                if (res.ok || res.redirected) {
+                    textarea.value = '';
+                    pollForComments();
+                }
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Post Comment';
+            })
+            .catch(function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Post Comment';
+            });
+        });
+    }
+
+    /* Start polling */
+    pollTimer = setInterval(pollForComments, POLL_INTERVAL);
+
+    /* Pause when tab is hidden */
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            clearInterval(pollTimer);
+        } else {
+            pollForComments();
+            pollTimer = setInterval(pollForComments, POLL_INTERVAL);
+        }
+    });
+})();
+</script>
+{% endblock %}

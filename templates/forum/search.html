@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Forum{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <p class="breadcrumb">
+            <a href="{% url 'forum:home' %}">Forum</a> / Search
+        </p>
+
+        <h1>Search Forum</h1>
+
+        <form action="{% url 'forum:search' %}" method="GET" class="forum-search">
+            <input type="text" name="q" value="{{ query }}" class="form-input" placeholder="Search discussions...">
+            <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+        </form>
+
+        {% if query %}
+        <p class="search-meta">{{ results|length }} result{{ results|length|pluralize }} for "{{ query }}"</p>
+
+        <div class="post-list">
+            {% for post in results %}
+            <a href="{% url 'forum:post_detail' slug=post.slug %}" class="post-card">
+                <div class="post-card-main">
+                    <h3 class="post-title">{{ post.title }}</h3>
+                    <p class="post-excerpt">{{ post.content|truncatewords:25 }}</p>
+                </div>
+                <div class="post-card-meta">
+                    <span class="meta-author">{{ post.author.username }}</span>
+                    <span class="meta-sep"></span>
+                    {% if post.category %}
+                    <span class="meta-category">{{ post.category.name }}</span>
+                    <span class="meta-sep"></span>
+                    {% endif %}
+                    <span class="meta-comments">{{ post.total_comments }} comment{{ post.total_comments|pluralize }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <p class="empty-message">No results found. Try different keywords.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

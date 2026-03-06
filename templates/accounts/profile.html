@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="profile-header">
+            <h1>Your Profile</h1>
+            <p>Manage your Nhimbe AI account, {{ user.first_name|default:user.username }}</p>
+        </div>
+
+        <div class="profile-card">
+            <form method="POST" enctype="multipart/form-data" class="auth-form">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small class="form-help">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="form-error">
+                        {% for error in field.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="ti ti-check"></i> Update Profile
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

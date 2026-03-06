@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ ui.search }} - {{ ui.knowledge_base }}{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <p class="breadcrumb">
+            <a href="{% url 'knowledge:home' %}">{{ ui.knowledge_base }}</a> / {{ ui.search }}
+        </p>
+
+        <h1>{{ ui.search_articles }}</h1>
+
+        <form action="{% url 'knowledge:search' %}" method="GET" class="forum-search">
+            <input type="text" name="q" value="{{ query }}" class="form-input" placeholder="{{ ui.search_articles }}">
+            <button type="submit" class="btn btn-secondary btn-sm">{{ ui.search }}</button>
+        </form>
+
+        {% if query %}
+        <p class="search-meta">{{ results|length }} result{{ results|length|pluralize }} for "{{ query }}"</p>
+
+        <div class="article-list">
+            {% for article in results %}
+            <a href="{% url 'knowledge:article_detail' slug=article.slug %}" class="article-list-item">
+                <div class="article-list-main">
+                    <div class="article-card-tags">
+                        {% if article.category %}
+                        <span class="article-tag">{{ article.category.name }}</span>
+                        {% endif %}
+                        <span class="article-difficulty article-difficulty--{{ article.difficulty }}">{{ article.get_difficulty_display }}</span>
+                    </div>
+                    <h3>{{ article.title }}</h3>
+                    <p>{{ article.summary|truncatewords:18 }}</p>
+                </div>
+            </a>
+            {% empty %}
+            <p class="empty-message">No results found. Try different keywords.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

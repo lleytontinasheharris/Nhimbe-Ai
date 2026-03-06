@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Dashboard</h1>
+                <p>Monitor your platform activity</p>
+            </div>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="dash-cards">
+            <div class="dash-card">
+                <div class="dash-card-icon dash-card-icon--users">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div class="dash-card-info">
+                    <span class="dash-card-number">{{ total_users }}</span>
+                    <span class="dash-card-label">Total Farmers</span>
+                    <span class="dash-card-sub">+{{ new_users_7d }} this week</span>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <div class="dash-card-icon dash-card-icon--forum">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <div class="dash-card-info">
+                    <span class="dash-card-number">{{ total_posts }}</span>
+                    <span class="dash-card-label">Forum Posts</span>
+                    <span class="dash-card-sub">+{{ posts_7d }} this week</span>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <div class="dash-card-icon dash-card-icon--knowledge">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </div>
+                <div class="dash-card-info">
+                    <span class="dash-card-number">{{ published_articles }}</span>
+                    <span class="dash-card-label">Articles</span>
+                    <span class="dash-card-sub">{{ total_ratings }} ratings</span>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <div class="dash-card-icon dash-card-icon--chat">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22V12M12 12C12 7 7 3 2 3c0 5 4 9 10 9zM12 12c0-5 5-9 10-9 0 5-4 9-10 9z"/>
+                    </svg>
+                </div>
+                <div class="dash-card-info">
+                    <span class="dash-card-number">{{ total_conversations }}</span>
+                    <span class="dash-card-label">AI Chats</span>
+                    <span class="dash-card-sub">{{ total_messages }} messages</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="dash-grid">
+
+            <!-- Recent Users -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Recent Signups</h2>
+                <div class="dash-table">
+                    {% for u in recent_users %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ u.get_full_name|default:u.username }}</strong>
+                            <span class="dash-table-sub">{{ u.get_province_display|default:"No province" }}</span>
+                        </div>
+                        <div class="dash-table-meta">
+                            {{ u.date_joined|timesince }} ago
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No users yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Forum Posts -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Recent Forum Posts</h2>
+                <div class="dash-table">
+                    {% for post in recent_posts %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ post.title|truncatewords:8 }}</strong>
+                            <span class="dash-table-sub">by {{ post.author.username }} in {{ post.category.name }}</span>
+                        </div>
+                        <div class="dash-table-meta">
+                            {{ post.created_at|timesince }} ago
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No posts yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Popular Articles -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Most Viewed Articles</h2>
+                <div class="dash-table">
+                    {% for article in popular_articles %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ article.title|truncatewords:8 }}</strong>
+                            <span class="dash-table-sub">{{ article.category.name|default:"Uncategorized" }}</span>
+                        </div>
+                        <div class="dash-table-meta">
+                            {{ article.views }} views
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No articles yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent AI Conversations -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Recent AI Chats</h2>
+                <div class="dash-table">
+                    {% for conv in recent_conversations %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ conv.title|truncatewords:8 }}</strong>
+                            <span class="dash-table-sub">by {{ conv.user.username }} &middot; {{ conv.message_count }} messages</span>
+                        </div>
+                        <div class="dash-table-meta">
+                            {{ conv.updated_at|timesince }} ago
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No conversations yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Users by Province -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Farmers by Province</h2>
+                <div class="dash-table">
+                    {% for item in users_by_province %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ item.province|title }}</strong>
+                        </div>
+                        <div class="dash-table-meta">
+                            <span class="dash-badge">{{ item.count }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No province data yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Users by Language -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Language Preference</h2>
+                <div class="dash-table">
+                    {% for item in users_by_language %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>
+                                {% if item.preferred_language == 'en' %}English
+                                {% elif item.preferred_language == 'sn' %}Shona
+                                {% elif item.preferred_language == 'nd' %}Ndebele
+                                {% else %}{{ item.preferred_language }}
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <div class="dash-table-meta">
+                            <span class="dash-badge">{{ item.count }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No language data yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Most Active Users -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Most Active Farmers</h2>
+                <div class="dash-table">
+                    {% for u in active_posters %}
+                    {% if u.post_count > 0 %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ u.get_full_name|default:u.username }}</strong>
+                            <span class="dash-table-sub">{{ u.post_count }} posts &middot; {{ u.comment_count }} comments</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <p class="empty-message">No activity yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Active Chatbot Users -->
+            <div class="dash-section">
+                <h2 class="sub-heading">Top AI Chat Users</h2>
+                <div class="dash-table">
+                    {% for u in active_chatters %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>{{ u.get_full_name|default:u.username }}</strong>
+                            <span class="dash-table-sub">{{ u.convo_count }} conversations</span>
+                        </div>
+                        <div class="dash-table-meta">
+                            {{ u.msg_count }} msgs
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-message">No chat activity yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

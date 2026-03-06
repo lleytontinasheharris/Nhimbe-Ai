@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container forum-container--narrow">
+
+        <p class="breadcrumb">
+            <a href="{% url 'forum:home' %}">Forum</a> /
+            <a href="{% url 'forum:post_detail' slug=post.slug %}">{{ post.title|truncatewords:5 }}</a> / Edit
+        </p>
+
+        <div class="form-card">
+            <h1>Edit Post</h1>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="form-error">
+                        {% for error in field.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+            </form>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
