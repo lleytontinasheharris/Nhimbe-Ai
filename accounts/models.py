@@ -32,8 +32,8 @@ class CustomUser(AbstractUser):
         max_length=2, choices=LANGUAGE_CHOICES, default='en'
     )
     profile_picture = models.ImageField(
-        upload_to='profiles/', default='profiles/default.png', blank=True
-    )
+    upload_to='profiles/', blank=True, null=True
+)
     farming_experience = models.PositiveIntegerField(
         default=0, help_text="Years of farming experience"
     )

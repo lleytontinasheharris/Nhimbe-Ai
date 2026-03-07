@@ -283,8 +283,8 @@
         </div>
         {% else %}
         <div class="hero-actions">
-            <a href="#" class="btn btn-primary btn-lg">Ask Ai Assistant</a>
-            <a href="#" class="btn btn-ghost btn-lg">Visit Forum</a>
+    <a href="{% url 'chatbot:home' %}" class="btn btn-primary btn-lg">{{ ui.ask_ai }}</a>
+    <a href="{% url 'forum:home' %}" class="btn btn-ghost btn-lg">{{ ui.visit_forum }}</a>
         </div>
         {% endif %}
 
