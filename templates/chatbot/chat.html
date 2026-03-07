@@ -503,6 +503,35 @@
     .btn-clear-chat span { display: none; }
     .btn-clear-chat { padding: 0.38rem 0.6rem; }
 }
+
+/* Language Notice */
+.chat-language-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 500px;
+    text-align: left;
+}
+
+.chat-language-notice svg {
+    flex-shrink: 0;
+    color: #2a5878;
+    margin-top: 0.1rem;
+}
+
+.chat-language-notice p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #2a5878;
+    line-height: 1.5;
+}
+
 </style>
 {% endblock %}
 
@@ -586,26 +615,34 @@
                 <h2>{{ ui.chat_welcome_title }}</h2>
                 <p>{{ ui.chat_welcome_text }}</p>
                 <div class="chat-suggestions">
-                    {% if lang == 'sn' %}
-                    <button class="chat-suggestion" data-question="Ndodzvara chibage riini muZimbabwe?">Kudzvara chibage</button>
-                    <button class="chat-suggestion" data-question="Ndinotanga sei kurima huku dzenyama?">Kurima huku</button>
-                    <button class="chat-suggestion" data-question="Conservation farming chii?">Kurima kwekuchengetedza</button>
-                    <button class="chat-suggestion" data-question="Ndinoedza sei ivhu rangu?">Kuedza ivhu</button>
-                    <button class="chat-suggestion" data-question="Ndingakurisa sei madomasi muZimbabwe?">Kukurisa madomasi</button>
-                    {% elif lang == 'nd' %}
-                    <button class="chat-suggestion" data-question="Kumele ngihlanyele ummbila nini eZimbabwe?">Ukuhlanyela ummbila</button>
-                    <button class="chat-suggestion" data-question="Ngingaqalisa njani ukulima inkukhu zenyama?">Ukulima inkukhu</button>
-                    <button class="chat-suggestion" data-question="Kuyini ukulima kokuconserva?">Ukulima kokuconserva</button>
-                    <button class="chat-suggestion" data-question="Ngingahlola njani umhlabathi wami?">Ukuhlola umhlabathi</button>
-                    <button class="chat-suggestion" data-question="Ngingakhulisa njani amatamato eZimbabwe?">Ukukhulisa amatamato</button>
-                    {% else %}
-                    <button class="chat-suggestion" data-question="When should I plant maize in Zimbabwe?">Planting maize</button>
-                    <button class="chat-suggestion" data-question="How do I start broiler chicken farming?">Broiler farming</button>
-                    <button class="chat-suggestion" data-question="What is conservation farming?">Conservation farming</button>
-                    <button class="chat-suggestion" data-question="How do I test my soil?">Soil testing</button>
-                    <button class="chat-suggestion" data-question="How to grow tomatoes in Zimbabwe?">Growing tomatoes</button>
-                    {% endif %}
-                </div>
+    {% if lang == 'sn' or lang == 'nd' %}
+    <div class="chat-language-notice">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <p>
+            {% if lang == 'sn' %}
+            AI yedu inogona kupindura zviri nani muChirungu pari zvino. Nyora mubvunzo wako muChirungu kuti uwane mhinduro yakanyanya kunaka.
+            {% else %}
+            I-AI yethu iphendula ngcono ngesiNgisi okwamanje. Bhala umbuzo wakho ngesiNgisi ukuze uthole impendulo engcono kakhulu.
+            {% endif %}
+        </p>
+    </div>
+    <button class="chat-suggestion" data-question="When should I plant maize in Zimbabwe?">Planting maize</button>
+    <button class="chat-suggestion" data-question="How do I start broiler chicken farming?">Broiler farming</button>
+    <button class="chat-suggestion" data-question="What is conservation farming?">Conservation farming</button>
+    <button class="chat-suggestion" data-question="How do I test my soil?">Soil testing</button>
+    <button class="chat-suggestion" data-question="How to grow tomatoes in Zimbabwe?">Growing tomatoes</button>
+    {% else %}
+    <button class="chat-suggestion" data-question="When should I plant maize in Zimbabwe?">Planting maize</button>
+    <button class="chat-suggestion" data-question="How do I start broiler chicken farming?">Broiler farming</button>
+    <button class="chat-suggestion" data-question="What is conservation farming?">Conservation farming</button>
+    <button class="chat-suggestion" data-question="How do I test my soil?">Soil testing</button>
+    <button class="chat-suggestion" data-question="How to grow tomatoes in Zimbabwe?">Growing tomatoes</button>
+    {% endif %}
+</div>
             </div>
             {% else %}
             {% for msg in messages %}
@@ -805,25 +842,27 @@
                 '<h2>' + uiStrings.welcomeTitle + '</h2>',
                 '<p>' + uiStrings.welcomeText + '</p>',
                 '<div class="chat-suggestions">',
-                {% if lang == 'sn' %}
-                '  <button class="chat-suggestion" data-question="Ndodyara chibage riini muZimbabwe?">Kudzvara chibage</button>',
-                '  <button class="chat-suggestion" data-question="Ndinotanga sei kurima huku dzenyama?">Kurima huku</button>',
-                '  <button class="chat-suggestion" data-question="Conservation farming chii?">Kurima kwekuchengetedza</button>',
-                '  <button class="chat-suggestion" data-question="Ndinoedza sei ivhu rangu?">Kuedza ivhu</button>',
-                '  <button class="chat-suggestion" data-question="Ndingakurisa sei madomasi muZimbabwe?">Kukurisa madomasi</button>',
-                {% elif lang == 'nd' %}
-                '  <button class="chat-suggestion" data-question="Kumele ngihlanyele ummbila nini eZimbabwe?">Ukuhlanyela ummbila</button>',
-                '  <button class="chat-suggestion" data-question="Ngingaqalisa njani ukulima inkukhu zenyama?">Ukulima inkukhu</button>',
-                '  <button class="chat-suggestion" data-question="Kuyini ukulima kokuconserva?">Ukulima kokuconserva</button>',
-                '  <button class="chat-suggestion" data-question="Ngingahlola njani umhlabathi wami?">Ukuhlola umhlabathi</button>',
-                '  <button class="chat-suggestion" data-question="Ngingakhulisa njani amatamato eZimbabwe?">Ukukhulisa amatamato</button>',
-                {% else %}
-                '  <button class="chat-suggestion" data-question="When should I plant maize in Zimbabwe?">Planting maize</button>',
-                '  <button class="chat-suggestion" data-question="How do I start broiler chicken farming?">Broiler farming</button>',
-                '  <button class="chat-suggestion" data-question="What is conservation farming?">Conservation farming</button>',
-                '  <button class="chat-suggestion" data-question="How do I test my soil?">Soil testing</button>',
-                '  <button class="chat-suggestion" data-question="How to grow tomatoes in Zimbabwe?">Growing tomatoes</button>',
-                {% endif %}
+                {% if lang == 'sn' or lang == 'nd' %}
+'<div class="chat-language-notice">',
+'  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+'    <circle cx="12" cy="12" r="10"></circle>',
+'    <line x1="12" y1="16" x2="12" y2="12"></line>',
+'    <line x1="12" y1="8" x2="12.01" y2="8"></line>',
+'  </svg>',
+'  <p>{% if lang == "sn" %}AI yedu inogona kupindura zviri nani muChirungu pari zvino. Nyora mubvunzo wako muChirungu kuti uwane mhinduro yakanyanya kunaka.{% else %}I-AI yethu iphendula ngcono ngesiNgisi okwamanje. Bhala umbuzo wakho ngesiNgisi ukuze uthole impendulo engcono kakhulu.{% endif %}</p>',
+'</div>',
+'  <button class="chat-suggestion" data-question="When should I plant maize in Zimbabwe?">Planting maize</button>',
+'  <button class="chat-suggestion" data-question="How do I start broiler chicken farming?">Broiler farming</button>',
+'  <button class="chat-suggestion" data-question="What is conservation farming?">Conservation farming</button>',
+'  <button class="chat-suggestion" data-question="How do I test my soil?">Soil testing</button>',
+'  <button class="chat-suggestion" data-question="How to grow tomatoes in Zimbabwe?">Growing tomatoes</button>',
+{% else %}
+'  <button class="chat-suggestion" data-question="When should I plant maize in Zimbabwe?">Planting maize</button>',
+'  <button class="chat-suggestion" data-question="How do I start broiler chicken farming?">Broiler farming</button>',
+'  <button class="chat-suggestion" data-question="What is conservation farming?">Conservation farming</button>',
+'  <button class="chat-suggestion" data-question="How do I test my soil?">Soil testing</button>',
+'  <button class="chat-suggestion" data-question="How to grow tomatoes in Zimbabwe?">Growing tomatoes</button>',
+{% endif %}
                 '</div>'
             ].join('');
             messagesEl.insertBefore(welcome, typingEl);
