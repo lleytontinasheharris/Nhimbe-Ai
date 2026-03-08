@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}AGRITEX Applications{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="forum-container">
+
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>AGRITEX Applications</h1>
+                <p>Review and approve AGRITEX officer verification requests</p>
+            </div>
+            <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">
+                ← Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Pending Applications -->
+        <div class="dash-section">
+            <h2 class="sub-heading">
+                Pending Applications
+                {% if pending %}
+                <span class="pending-count">{{ pending|length }}</span>
+                {% endif %}
+            </h2>
+
+            {% if pending %}
+            <div class="agritex-list">
+                {% for user in pending %}
+                <div class="agritex-card agritex-card--pending">
+                    <div class="agritex-card-avatar">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+                        {% else %}
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="agritex-card-info">
+                        <h3>{{ user.get_full_name|default:user.username }}</h3>
+                        <p>{{ user.email }}</p>
+                        <p class="agritex-card-meta">
+                            <span>{{ user.get_province_display|default:"No province" }}</span>
+                            <span class="meta-sep"></span>
+                            <span>Applied {{ user.agritex_applied_at|timesince }} ago</span>
+                        </p>
+                    </div>
+                    <div class="agritex-card-actions">
+                        <a href="{% url 'core:agritex_review' user.id %}" class="btn btn-primary btn-sm">Review</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-message">No pending applications.</p>
+            {% endif %}
+        </div>
+
+        <!-- Recently Approved -->
+        <div class="dash-section">
+            <h2 class="sub-heading">Recently Approved</h2>
+
+            {% if approved %}
+            <div class="agritex-list">
+                {% for user in approved %}
+                <div class="agritex-card agritex-card--approved">
+                    <div class="agritex-card-avatar">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+                        {% else %}
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="agritex-card-info">
+                        <h3>
+                            {{ user.get_full_name|default:user.username }}
+                            <span class="agritex-badge">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                AGRITEX
+                            </span>
+                        </h3>
+                        <p>{{ user.email }}</p>
+                        <p class="agritex-card-meta">
+                            Verified {{ user.agritex_verified_at|timesince }} ago
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-message">No approved officers yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Recently Rejected -->
+        {% if rejected %}
+        <div class="dash-section">
+            <h2 class="sub-heading">Recently Rejected</h2>
+
+            <div class="agritex-list">
+                {% for user in rejected %}
+                <div class="agritex-card agritex-card--rejected">
+                    <div class="agritex-card-avatar">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+                        {% else %}
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="agritex-card-info">
+                        <h3>{{ user.get_full_name|default:user.username }}</h3>
+                        <p>{{ user.email }}</p>
+                        {% if user.agritex_verification_notes %}
+                        <p class="agritex-card-notes">Reason: {{ user.agritex_verification_notes }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="agritex-card-actions">
+                        <a href="{% url 'core:agritex_review' user.id %}" class="btn btn-secondary btn-sm">Review Again</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

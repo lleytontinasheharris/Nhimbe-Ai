@@ -1,10 +1,12 @@
 """Core views"""
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.db.models import Count, Q
 from datetime import timedelta
+
+from django.contrib import messages
 
 from accounts.models import CustomUser
 from forum.models import Post, Comment, Category
@@ -119,6 +121,9 @@ def admin_dashboard(request):
         .order_by('-updated_at')[:10]
     )
 
+    # --- AGRITEX Stats ---
+    pending_agritex_count = CustomUser.objects.filter(agritex_verification_status='pending').count()
+
     context = {
         # User stats
         'total_users': total_users,
@@ -152,6 +157,54 @@ def admin_dashboard(request):
         'messages_7d': messages_7d,
         'active_chatters': active_chatters,
         'recent_conversations': recent_conversations,
+
+        # AGRITEX stats
+        'pending_agritex_count': pending_agritex_count,
     }
 
     return render(request, 'core/dashboard.html', context)
+
+
+@staff_member_required
+def agritex_applications(request):
+    """View all AGRITEX applications"""
+    pending = CustomUser.objects.filter(agritex_verification_status='pending').order_by('-agritex_applied_at')
+    approved = CustomUser.objects.filter(agritex_verification_status='approved').order_by('-agritex_verified_at')[:10]
+    rejected = CustomUser.objects.filter(agritex_verification_status='rejected').order_by('-id')[:10]
+
+    return render(request, 'core/agritex_applications.html', {
+        'pending': pending,
+        'approved': approved,
+        'rejected': rejected,
+    })
+
+
+@staff_member_required
+def agritex_review(request, user_id):
+    """Review a single AGRITEX application"""
+    applicant = get_object_or_404(CustomUser, id=user_id)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        notes = request.POST.get('notes', '')
+
+        if action == 'approve':
+            applicant.is_agritex_officer = True
+            applicant.agritex_verification_status = 'approved'
+            applicant.agritex_verified_at = timezone.now()
+            applicant.agritex_verification_notes = notes
+            applicant.save()
+            messages.success(request, f'{applicant.username} has been approved as an AGRITEX officer.')
+
+        elif action == 'reject':
+            applicant.is_agritex_officer = False
+            applicant.agritex_verification_status = 'rejected'
+            applicant.agritex_verification_notes = notes
+            applicant.save()
+            messages.warning(request, f'{applicant.username} application has been rejected.')
+
+        return redirect('core:agritex_applications')
+
+    return render(request, 'core/agritex_review.html', {
+        'applicant': applicant,
+    })

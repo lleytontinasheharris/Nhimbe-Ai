@@ -11,6 +11,12 @@
                 <h1>Dashboard</h1>
                 <p>Monitor your platform activity</p>
             </div>
+            <a href="{% url 'core:agritex_applications' %}" class="btn btn-secondary">
+                AGRITEX Applications
+                {% if pending_agritex_count %}
+                <span class="pending-count">{{ pending_agritex_count }}</span>
+                {% endif %}
+            </a>
         </div>
 
         <!-- Overview Cards -->
