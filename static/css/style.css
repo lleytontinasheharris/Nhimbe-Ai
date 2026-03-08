@@ -2333,3 +2333,149 @@ img { max-width: 100%; display: block; }
         grid-template-columns: 1fr;
     }
 }
+
+/* ================================================
+   AGRITEX VERIFICATION
+   ================================================ */
+
+.agritex-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: linear-gradient(135deg, #2d5a3d, #1e4028);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-pill);
+    margin-left: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.agritex-badge svg {
+    width: 12px;
+    height: 12px;
+}
+
+.agritex-badge-large {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    color: var(--soil-4);
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+}
+
+.agritex-pending {
+    color: var(--gold);
+    font-weight: 500;
+}
+
+.agritex-info {
+    background: var(--sand-0);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.agritex-info h3 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--soil-2);
+    margin-bottom: 0.5rem;
+}
+
+.agritex-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.agritex-info li {
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    color: var(--text-mid);
+}
+
+.status-box {
+    text-align: center;
+    padding: 2rem;
+    border-radius: var(--radius-card);
+    margin-bottom: 1.5rem;
+}
+
+.status-box--success {
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+}
+
+.status-box--pending {
+    background: #fff9e6;
+    border: 1px solid #f0d78c;
+}
+
+.status-box--rejected {
+    background: var(--error-bg);
+    border: 1px solid var(--error-border);
+}
+
+.status-icon {
+    margin-bottom: 1rem;
+}
+
+.status-box--success .status-icon { color: var(--soil-4); }
+.status-box--pending .status-icon { color: var(--gold); }
+.status-box--rejected .status-icon { color: var(--error); }
+
+.status-box h3 {
+    font-family: var(--font-heading);
+    margin-bottom: 0.5rem;
+}
+
+.status-date {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    margin-top: 1rem;
+}
+
+.status-notes {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(0,0,0,0.05);
+    border-radius: var(--radius-sm);
+}
+
+.profile-section {
+    background: var(--sand-0);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--sand-3);
+}
+
+.profile-section h3 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--soil-2);
+    margin-bottom: 0.75rem;
+}
+
+.checkbox-group {
+    margin: 1rem 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-top: 0.2rem;
+}

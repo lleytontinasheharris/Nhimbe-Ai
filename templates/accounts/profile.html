@@ -31,6 +31,26 @@
                 </div>
                 {% endfor %}
 
+                <!-- AGRITEX Verification Section -->
+<div class="profile-section">
+    <h3>AGRITEX Officer Verification</h3>
+    {% if user.is_verified_agritex %}
+    <div class="agritex-badge-large">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Verified AGRITEX Officer</span>
+    </div>
+    {% elif user.agritex_verification_status == 'pending' %}
+    <p class="agritex-pending">Your verification is pending review.</p>
+    <a href="{% url 'accounts:agritex_status' %}" class="btn btn-secondary btn-sm">Check Status</a>
+    {% else %}
+    <p>Are you an AGRITEX extension officer? Get verified to add credibility to your posts.</p>
+    <a href="{% url 'accounts:agritex_apply' %}" class="btn btn-secondary btn-sm">Apply for Verification</a>
+    {% endif %}
+</div>
+
                 <button type="submit" class="btn btn-primary btn-full">
                     <i class="ti ti-check"></i> Update Profile
                 </button>

@@ -24,7 +24,18 @@
                 {% endif %}
                 <h1>{{ post.title }}</h1>
                 <div class="post-card-meta">
-                    <span class="meta-author">{{ post.author.username }}</span>
+                    <span class="meta-author">
+                        {{ post.author.username }}
+                        {% if post.author.is_verified_agritex %}
+                        <span class="agritex-badge" title="Verified AGRITEX Officer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            AGRITEX
+                        </span>
+                        {% endif %}
+                    </span>
                     <span class="meta-sep"></span>
                     <span class="meta-date">{{ post.created_at|date:"d M Y, H:i" }}</span>
                     <span class="meta-sep"></span>
@@ -52,7 +63,18 @@
                 {% for comment in comments %}
                 <div class="comment-card" data-comment-id="{{ comment.id }}">
                     <div class="comment-meta">
-                        <span class="meta-author">{{ comment.author.username }}</span>
+                        <span class="meta-author">
+                            {{ comment.author.username }}
+                            {% if comment.author.is_verified_agritex %}
+                            <span class="agritex-badge" title="Verified AGRITEX Officer">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                AGRITEX
+                            </span>
+                            {% endif %}
+                        </span>
                         <span class="meta-sep"></span>
                         <span class="meta-date">{{ comment.created_at|timesince }} ago</span>
                     </div>
@@ -120,9 +142,21 @@
             .map(function (line) { return '<p>' + escapeHtml(line) + '</p>'; })
             .join('');
 
+        var badgeHtml = '';
+        if (comment.is_verified_agritex) {
+            badgeHtml =
+                '<span class="agritex-badge" title="Verified AGRITEX Officer">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                        '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>' +
+                        '<polyline points="22 4 12 14.01 9 11.01"></polyline>' +
+                    '</svg>' +
+                    ' AGRITEX' +
+                '</span>';
+        }
+
         div.innerHTML =
             '<div class="comment-meta">' +
-                '<span class="meta-author">' + escapeHtml(comment.author) + '</span>' +
+                '<span class="meta-author">' + escapeHtml(comment.author) + badgeHtml + '</span>' +
                 '<span class="meta-sep"></span>' +
                 '<span class="meta-date">' + escapeHtml(comment.time_since) + '</span>' +
             '</div>' +

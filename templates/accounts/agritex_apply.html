@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for AGRITEX Verification{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+        <h2>AGRITEX Officer Verification</h2>
+        <p class="auth-subtitle">Apply to get verified as an AGRITEX extension officer</p>
+
+        <div class="agritex-info">
+            <h3>Benefits of Verification</h3>
+            <ul>
+                <li>✓ Verified badge on your posts and comments</li>
+                <li>✓ Increased credibility in the community</li>
+                <li>✓ Help farmers with trusted advice</li>
+            </ul>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_agritex_id_document">Upload AGRITEX ID or Proof of Employment *</label>
+                {{ form.agritex_id_document }}
+                <small class="form-help">Upload a clear photo of your AGRITEX ID card or employment letter. Accepted formats: JPG, PNG, PDF</small>
+                {% if form.agritex_id_document.errors %}
+                <small class="form-error">{{ form.agritex_id_document.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    {{ form.confirm_agritex }}
+                    <span>{{ form.confirm_agritex.label }}</span>
+                </label>
+                {% if form.confirm_agritex.errors %}
+                <small class="form-error">{{ form.confirm_agritex.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">Submit for Verification</button>
+        </form>
+
+        <p class="auth-footer">
+            <a href="{% url 'accounts:profile' %}">← Back to Profile</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

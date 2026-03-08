@@ -1,65 +1,89 @@
-"""Accounts views - Registration, Login, Profile"""
+"""Accounts views"""
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
 from django.contrib import messages
-from .forms import RegistrationForm, LoginForm, ProfileUpdateForm
+from django.utils import timezone
+from .forms import RegistrationForm, LoginForm, ProfileUpdateForm, AgritexVerificationForm
+from .models import CustomUser
 
 
 def register_view(request):
-    """Handle user registration"""
-    if request.user.is_authenticated:
-        return redirect('core:home')
-
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f'Welcome to Nhimbe AI, {user.username}!')
+            messages.success(request, 'Welcome to Nhimbe AI!')
             return redirect('core:home')
-        else:
-            messages.error(request, 'Please fix the errors below.')
     else:
         form = RegistrationForm()
-
     return render(request, 'accounts/register.html', {'form': form})
 
 
-class CustomLoginView(LoginView):
-    """Custom login view with styled form"""
-    form_class = LoginForm
-    template_name = 'accounts/login.html'
-
-    def form_valid(self, form):
-        messages.success(self.request, f'Welcome back, {form.get_user().username}!')
-        return super().form_valid(form)
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect('core:home')
-        return super().dispatch(request, *args, **kwargs)
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, f'Welcome back, {user.first_name or user.username}!')
+            next_url = request.GET.get('next', 'core:home')
+            return redirect(next_url)
+    else:
+        form = LoginForm()
+    return render(request, 'accounts/login.html', {'form': form})
 
 
 def logout_view(request):
-    """Handle user logout"""
     logout(request)
-    messages.info(request, 'You have been logged out. See you soon!')
+    messages.info(request, 'You have been logged out.')
     return redirect('core:home')
 
 
 @login_required
 def profile_view(request):
-    """Display and update user profile"""
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Profile updated successfully.')
+            messages.success(request, 'Profile updated successfully!')
             return redirect('accounts:profile')
     else:
         form = ProfileUpdateForm(instance=request.user)
+    
+    return render(request, 'accounts/profile.html', {
+        'form': form,
+        'user': request.user,
+    })
 
-    return render(request, 'accounts/profile.html', {'form': form})
+
+@login_required
+def agritex_verification_view(request):
+    """Handle AGRITEX officer verification application"""
+    user = request.user
+
+    # If already verified or pending, show status
+    if user.agritex_verification_status in ['approved', 'pending']:
+        return render(request, 'accounts/agritex_status.html', {'user': user})
+
+    if request.method == 'POST':
+        form = AgritexVerificationForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.agritex_verification_status = 'pending'
+            user.agritex_applied_at = timezone.now()
+            user.save()
+            messages.success(request, 'Your AGRITEX verification request has been submitted. An admin will review it shortly.')
+            return redirect('accounts:agritex_status')
+    else:
+        form = AgritexVerificationForm(instance=user)
+
+    return render(request, 'accounts/agritex_apply.html', {'form': form})
+
+
+@login_required
+def agritex_status_view(request):
+    """Show AGRITEX verification status"""
+    return render(request, 'accounts/agritex_status.html', {'user': request.user})

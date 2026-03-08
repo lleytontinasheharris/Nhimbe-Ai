@@ -51,6 +51,28 @@ class ProfileUpdateForm(forms.ModelForm):
             'farming_experience', 'crops'
         ]
 
+
+class AgritexVerificationForm(forms.ModelForm):
+    """Form for applying for AGRITEX officer verification"""
+    
+    confirm_agritex = forms.BooleanField(
+        required=True,
+        label="I confirm that I am an AGRITEX officer and the document I'm uploading is genuine."
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ['agritex_id_document']
+        widgets = {
+            'agritex_id_document': forms.FileInput(attrs={'accept': 'image/*,.pdf'})
+        }
+
+    def clean_agritex_id_document(self):
+        document = self.cleaned_data.get('agritex_id_document')
+        if not document:
+            raise forms.ValidationError("Please upload your AGRITEX ID or proof of employment.")
+        return document
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():

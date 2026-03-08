@@ -10,4 +10,6 @@ urlpatterns = [
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
+    path('agritex/verify/', views.agritex_verification_view, name='agritex_verify'),
+    path('agritex/status/', views.agritex_status_view, name='agritex_status'),
 ]
