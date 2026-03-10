@@ -2,6 +2,56 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+.chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+.chart-card {
+    background: var(--sand-1);
+    border-radius: var(--radius-card);
+    padding: 1.5rem;
+    box-shadow: var(--neu-raised);
+    position: relative;
+}
+
+.chart-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 2px;
+    right: 2px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 8%, rgba(255,255,255,0.92) 50%, transparent 92%);
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.chart-card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--soil-2);
+    margin: 0 0 1rem 0;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="page-section">
     <div class="forum-container">
@@ -74,6 +124,44 @@
                     <span class="dash-card-number">{{ total_conversations }}</span>
                     <span class="dash-card-label">AI Chats</span>
                     <span class="dash-card-sub">{{ total_messages }} messages</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-grid">
+            <!-- User Signups Chart -->
+            <div class="chart-card">
+                <h3>User Signups (Last 30 Days)</h3>
+                <div class="chart-container">
+                    <canvas id="signupsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Forum Activity Chart -->
+            <div class="chart-card">
+                <h3>Forum Activity (Last 14 Days)</h3>
+                <div class="chart-container">
+                    <canvas id="forumChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-grid">
+            <!-- Users by Province -->
+            <div class="chart-card">
+                <h3>Farmers by Province</h3>
+                <div class="chart-container">
+                    <canvas id="provinceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- AI Chat Activity -->
+            <div class="chart-card">
+                <h3>AI Chat Messages (Last 14 Days)</h3>
+                <div class="chart-container">
+                    <canvas id="chatChart"></canvas>
                 </div>
             </div>
         </div>
@@ -161,91 +249,267 @@
                 </div>
             </div>
 
-            <!-- Users by Province -->
-            <div class="dash-section">
-                <h2 class="sub-heading">Farmers by Province</h2>
-                <div class="dash-table">
-                    {% for item in users_by_province %}
-                    <div class="dash-table-row">
-                        <div class="dash-table-main">
-                            <strong>{{ item.province|title }}</strong>
-                        </div>
-                        <div class="dash-table-meta">
-                            <span class="dash-badge">{{ item.count }}</span>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="empty-message">No province data yet.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Users by Language -->
+            <!-- Language Distribution -->
             <div class="dash-section">
                 <h2 class="sub-heading">Language Preference</h2>
-                <div class="dash-table">
-                    {% for item in users_by_language %}
-                    <div class="dash-table-row">
-                        <div class="dash-table-main">
-                            <strong>
-                                {% if item.preferred_language == 'en' %}English
-                                {% elif item.preferred_language == 'sn' %}Shona
-                                {% elif item.preferred_language == 'nd' %}Ndebele
-                                {% else %}{{ item.preferred_language }}
-                                {% endif %}
-                            </strong>
-                        </div>
-                        <div class="dash-table-meta">
-                            <span class="dash-badge">{{ item.count }}</span>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="empty-message">No language data yet.</p>
-                    {% endfor %}
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="languageChart"></canvas>
                 </div>
             </div>
 
-            <!-- Most Active Users -->
+            <!-- AGRITEX Officers -->
             <div class="dash-section">
-                <h2 class="sub-heading">Most Active Farmers</h2>
+                <h2 class="sub-heading">AGRITEX Officers</h2>
                 <div class="dash-table">
-                    {% for u in active_posters %}
-                    {% if u.post_count > 0 %}
                     <div class="dash-table-row">
                         <div class="dash-table-main">
-                            <strong>{{ u.get_full_name|default:u.username }}</strong>
-                            <span class="dash-table-sub">{{ u.post_count }} posts &middot; {{ u.comment_count }} comments</span>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% empty %}
-                    <p class="empty-message">No activity yet.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Active Chatbot Users -->
-            <div class="dash-section">
-                <h2 class="sub-heading">Top AI Chat Users</h2>
-                <div class="dash-table">
-                    {% for u in active_chatters %}
-                    <div class="dash-table-row">
-                        <div class="dash-table-main">
-                            <strong>{{ u.get_full_name|default:u.username }}</strong>
-                            <span class="dash-table-sub">{{ u.convo_count }} conversations</span>
+                            <strong>Verified Officers</strong>
                         </div>
                         <div class="dash-table-meta">
-                            {{ u.msg_count }} msgs
+                            <span class="dash-badge">{{ approved_agritex_count }}</span>
                         </div>
                     </div>
-                    {% empty %}
-                    <p class="empty-message">No chat activity yet.</p>
-                    {% endfor %}
+                    <div class="dash-table-row">
+                        <div class="dash-table-main">
+                            <strong>Pending Applications</strong>
+                        </div>
+                        <div class="dash-table-meta">
+                            {% if pending_agritex_count %}
+                            <span class="dash-badge" style="background: var(--gold);">{{ pending_agritex_count }}</span>
+                            {% else %}
+                            <span>0</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
+                <a href="{% url 'core:agritex_applications' %}" class="btn btn-secondary btn-sm" style="margin-top: 1rem;">
+                    View Applications
+                </a>
             </div>
 
         </div>
 
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Color palette matching your theme
+    const colors = {
+        green: '#2d5a3d',
+        greenLight: '#5fa37b',
+        gold: '#b87333',
+        rust: '#8a4a2c',
+        sand: '#d8cebb',
+        blue: '#2a5878',
+        purple: '#6a4c93'
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    };
+
+    // 1. User Signups Line Chart
+    const signupsCtx = document.getElementById('signupsChart');
+    if (signupsCtx) {
+        new Chart(signupsCtx, {
+            type: 'line',
+            data: {
+                labels: {{ signup_labels|safe }},
+                datasets: [{
+                    label: 'New Users',
+                    data: {{ signup_values|safe }},
+                    borderColor: colors.green,
+                    backgroundColor: 'rgba(45, 90, 61, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: colors.green,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // 2. Forum Activity Bar Chart
+    const forumCtx = document.getElementById('forumChart');
+    if (forumCtx) {
+        new Chart(forumCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ activity_labels|safe }},
+                datasets: [
+                    {
+                        label: 'Posts',
+                        data: {{ activity_posts|safe }},
+                        backgroundColor: colors.green,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Comments',
+                        data: {{ activity_comments|safe }},
+                        backgroundColor: colors.greenLight,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. Province Pie Chart
+    const provinceCtx = document.getElementById('provinceChart');
+    if (provinceCtx) {
+        const provinceLabels = {{ province_labels|safe }};
+        const provinceValues = {{ province_values|safe }};
+        
+        if (provinceLabels.length > 0) {
+            new Chart(provinceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: provinceLabels,
+                    datasets: [{
+                        data: provinceValues,
+                        backgroundColor: [
+                            colors.green,
+                            colors.greenLight,
+                            colors.gold,
+                            colors.rust,
+                            colors.blue,
+                            colors.purple,
+                            '#4a7c59',
+                            '#8fbc8f',
+                            '#d4a574',
+                            '#c4a484'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#f9f5ee'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            provinceCtx.parentElement.innerHTML = '<p class="empty-message">No province data yet.</p>';
+        }
+    }
+
+    // 4. Chat Activity Line Chart
+    const chatCtx = document.getElementById('chatChart');
+    if (chatCtx) {
+        new Chart(chatCtx, {
+            type: 'line',
+            data: {
+                labels: {{ chat_labels|safe }},
+                datasets: [{
+                    label: 'Messages',
+                    data: {{ chat_values|safe }},
+                    borderColor: colors.blue,
+                    backgroundColor: 'rgba(42, 88, 120, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: colors.blue,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // 5. Language Pie Chart
+    const languageCtx = document.getElementById('languageChart');
+    if (languageCtx) {
+        const languageLabels = {{ language_labels|safe }};
+        const languageValues = {{ language_values|safe }};
+        
+        if (languageLabels.length > 0) {
+            new Chart(languageCtx, {
+                type: 'pie',
+                data: {
+                    labels: languageLabels,
+                    datasets: [{
+                        data: languageValues,
+                        backgroundColor: [
+                            colors.green,
+                            colors.gold,
+                            colors.rust
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#f9f5ee'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
 {% endblock %}
